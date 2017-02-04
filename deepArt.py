@@ -33,8 +33,8 @@ def imshow(tensor):
     image = unloader(image)
     plt.imshow(image)
 
-style = image_loader("style.jpg").cuda()
-content = image_loader("content.jpg").cuda()
+style = image_loader("images/picasso.jpg").cuda()
+content = image_loader("images/dancing.jpg").cuda()
 
 style_weight = 500
 content_weight = 5
@@ -133,9 +133,9 @@ print art_net
 ##################### create a module containing trained image
 
 # variable with data of the same dimensions than content or style
-image = image_loader("content.jpg").cuda()
+image = image_loader("images/dancing.jpg").cuda()
 # fill it with a white noise
-#image.data = torch.randn(image.data.size()).cuda()
+image.data = torch.randn(image.data.size()).cuda()
 
 from torch.nn.parameter import Parameter
 class input_image(nn.Module):
@@ -164,13 +164,13 @@ for run in range(500):
     art_net.forward(input.image)
 
     loss1 = art_net.style_loss1.backward()
-    loss2 = art_net.content_loss1.backward()
+    #loss2 = art_net.content_loss1.backward()
     loss1 = art_net.style_loss2.backward()
-    loss2 += art_net.content_loss2.backward()
+    #loss2 += art_net.content_loss2.backward()
     loss1 += art_net.style_loss3.backward()
     #loss2 = art_net.content_loss3.backward()
     loss1 += art_net.style_loss4.backward()
-    #loss2 += art_net.content_loss4.backward()
+    loss2 = art_net.content_loss4.backward()
     loss1 += art_net.style_loss5.backward()
     #loss2 += art_net.content_loss5.backward()
 
