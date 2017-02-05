@@ -184,27 +184,20 @@ imshow(input.data)
 
 ######## gradient descent
 
-class input_image(nn.Module):
-    def __init__(self, image):
-        super(input_image,self).__init__()
-        self.image = nn.Parameter(image.data)
-
-input = input_image(input)
-
-# then, we can safely create the optimizer:
-optimizer = optim.Adam(input.parameters(), lr = 0.01)
+input = nn.Parameter(input.data) # this line to show that input is a parameter that requires a gradient
+optimizer = optim.Adam([input], lr = 0.01)
 
 for run in range(500):
 
     # correct the values of updated input image
-    updated = input.image.data.cpu().clone()
+    updated = input.data.cpu().clone()
     updated = updated.numpy()
     updated[updated<0] = 0
     updated[updated>1] = 1
-    input.image.data = torch.from_numpy(updated).cuda()
+    input.data = torch.from_numpy(updated).cuda()
 
     optimizer.zero_grad()
-    art_net.forward(input.image)
+    art_net.forward(input)
     style_score = 0
     content_score = 0
 
@@ -221,7 +214,7 @@ for run in range(500):
         print content_score
 
 # a last correction...
-result = input.image.data.cpu().clone()
+result = input.data.cpu().clone()
 result = result.numpy()
 result[result<0] = 0
 result[result>1] = 1
@@ -229,5 +222,5 @@ result = torch.from_numpy(result)
 
 # finally enjoy the result:
 plt.subplot(224)
-imshow(input.image.data)
+imshow(input.data)
 plt.show()
