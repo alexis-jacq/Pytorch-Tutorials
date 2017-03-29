@@ -111,7 +111,7 @@ class StyleLoss(nn.Module):
 
 ####### load the cnn and build the model
 
-cnn = models.alexnet(pretrained=True).features.cuda()
+cnn = models.alexnet(pretrained=True).features
 
 # move it to the GPU if possible:
 if use_cuda:
@@ -125,8 +125,8 @@ style_layers = ['conv_1','conv_2','conv_3','conv_4','conv_5']
 content_losses = []
 style_losses = []
 
-art_net = nn.Sequential().cuda() # the new Sequential module network
-gram = GramMatrix().cuda() # we need a gram module in order to compute style targets
+art_net = nn.Sequential() # the new Sequential module network
+gram = GramMatrix() # we need a gram module in order to compute style targets
 
 # move these modules to the GPU if possible:
 if use_cuda:
