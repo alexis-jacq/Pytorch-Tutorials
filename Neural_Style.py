@@ -125,7 +125,7 @@ style_layers = ['conv_1','conv_2','conv_3','conv_4','conv_5']
 content_losses = []
 style_losses = []
 
-art_net = nn.Sequential() # the new Sequential module network
+model = nn.Sequential() # the new Sequential module network
 gram = GramMatrix() # we need a gram module in order to compute style targets
 
 # move these modules to the GPU if possible:
