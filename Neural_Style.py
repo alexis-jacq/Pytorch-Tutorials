@@ -83,7 +83,7 @@ class ContentLoss(nn.Module):
 
     def backward(self, retain_variables=True):
         self.loss.backward(retain_variables=retain_variables)
-        return self.loss.data[0]
+        return self.loss
 
 # style loss
 
@@ -99,8 +99,8 @@ class GramMatrix(nn.Module):
         G = torch.mm(features, features.t())  # compute the gram product
 
         # we 'normalize' the values of the gram matrix
-        return G.div(a * b * c * d)
         # by dividing by the number of element in each feature maps.
+        return G.div(a * b * c * d)
 
 
 class StyleLoss(nn.Module):
@@ -120,19 +120,19 @@ class StyleLoss(nn.Module):
 
     def backward(self, retain_variables=True):
         self.loss.backward(retain_variables=retain_variables)
-        return self.loss.data[0]
+        return self.loss
 
 # load the cnn and build the model
 
 
-cnn = models.alexnet(pretrained=True).features
+cnn = models.vgg19(pretrained=True).features
 
 # move it to the GPU if possible:
 if use_cuda:
     cnn = cnn.cuda()
 
 # desired depth layers to compute style/content losses :
-content_layers = ['conv_3']
+content_layers = ['conv_4']
 style_layers = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 
 # just in order to have an iterable access to or list of content/syle losses
@@ -149,7 +149,7 @@ if use_cuda:
 
 # weigth associated with content and style losses
 content_weight = 1
-style_weight = 100
+style_weight = 1000
 
 i = 1
 for layer in list(cnn):
@@ -213,29 +213,34 @@ imshow(input.data)
 
 # this line to show that input is a parameter that requires a gradient
 input = nn.Parameter(input.data)
-optimizer = optim.Adam([input], lr=0.01)
+optimizer = optim.LBFGS([input])
 
-for run in range(500):
+run = [0]
+while run[0] <= 300:
 
-    # correct the values of updated input image
-    input.data.clamp_(0, 1)
+    def closure():
+        # correct the values of updated input image
+        input.data.clamp_(0, 1)
 
-    optimizer.zero_grad()
-    model.forward(input)
-    style_score = 0
-    content_score = 0
+        optimizer.zero_grad()
+        model.forward(input)
+        style_score = 0
+        content_score = 0
 
-    for sl in style_losses:
-        style_score += sl.backward()
-    for cl in content_losses:
-        content_score += cl.backward()
+        for sl in style_losses:
+            style_score += sl.backward()
+        for cl in content_losses:
+            content_score += cl.backward()
 
-    optimizer.step()
+        run[0]+=1
+        if run[0] % 10 == 0:
+            print("run " + str(run) + ":")
+            print(style_score.data[0])
+            print(content_score.data[0])
 
-    if run % 10 == 0:
-        print("run " + str(run) + ":")
-        print(style_score)
-        print(content_score)
+        return style_score+style_score
+
+    optimizer.step(closure)
 
 # a last correction...
 input.data.clamp_(0, 1)
