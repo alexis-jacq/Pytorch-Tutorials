@@ -238,7 +238,7 @@ while run[0] <= 300:
             print(style_score.data[0])
             print(content_score.data[0])
 
-        return style_score+style_score
+        return content_score+style_score
 
     optimizer.step(closure)
 
